@@ -25,7 +25,7 @@ export const users = pgTable('users', {
   passwordResetToken: text('password_reset_token'),
   passwordResetExpires: timestamp('password_reset_expires'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull().$onUpdate(() => new Date()),
 });
 
 export const usersRelations = relations(users, ({ one, many }) => ({

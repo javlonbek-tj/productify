@@ -10,26 +10,34 @@ import {
 } from '../schema';
 
 export const postInteractionQueries = {
-  addLike: (data: NewPostLike) =>
-    db.insert(postLikes).values(data).returning().then((r) => r[0]),
+  addLike: async (data: NewPostLike) => {
+    const [like] = await db.insert(postLikes).values(data).returning();
+    return like;
+  },
 
-  removeLike: (postId: string, userId: string) =>
-    db
+  removeLike: async (postId: string, userId: string) => {
+    const [like] = await db
       .delete(postLikes)
       .where(and(eq(postLikes.postId, postId), eq(postLikes.userId, userId)))
-      .returning()
-      .then((r) => r[0] ?? null),
+      .returning();
+    return like;
+  },
 
-  addDislike: (data: NewPostDislike) =>
-    db.insert(postDislikes).values(data).returning().then((r) => r[0]),
+  addDislike: async (data: NewPostDislike) => {
+    const [dislike] = await db.insert(postDislikes).values(data).returning();
+    return dislike;
+  },
 
-  removeDislike: (postId: string, userId: string) =>
-    db
+  removeDislike: async (postId: string, userId: string) => {
+    const [dislike] = await db
       .delete(postDislikes)
       .where(and(eq(postDislikes.postId, postId), eq(postDislikes.userId, userId)))
-      .returning()
-      .then((r) => r[0] ?? null),
+      .returning();
+    return dislike;
+  },
 
-  addView: (data: NewPostView) =>
-    db.insert(postViews).values(data).returning().then((r) => r[0]),
+  addView: async (data: NewPostView) => {
+    const [view] = await db.insert(postViews).values(data).returning();
+    return view;
+  },
 };

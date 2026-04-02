@@ -5,8 +5,10 @@ import { posts, type NewPost, type UpdatePost } from '../schema';
 export const postQueries = {
   findAll: () => db.select().from(posts),
 
-  findById: (id: string) =>
-    db.select().from(posts).where(eq(posts.id, id)).then((r) => r[0] ?? null),
+  findById: async (id: string) => {
+    const [post] = await db.select().from(posts).where(eq(posts.id, id));
+    return post;
+  },
 
   findByUser: (userId: string) =>
     db.select().from(posts).where(eq(posts.userId, userId)),
@@ -27,12 +29,18 @@ export const postQueries = {
       },
     }),
 
-  create: (data: NewPost) =>
-    db.insert(posts).values(data).returning().then((r) => r[0]),
+  create: async (data: NewPost) => {
+    const [post] = await db.insert(posts).values(data).returning();
+    return post;
+  },
 
-  update: (id: string, data: UpdatePost) =>
-    db.update(posts).set(data).where(eq(posts.id, id)).returning().then((r) => r[0] ?? null),
+  update: async (id: string, data: UpdatePost) => {
+    const [post] = await db.update(posts).set(data).where(eq(posts.id, id)).returning();
+    return post;
+  },
 
-  delete: (id: string) =>
-    db.delete(posts).where(eq(posts.id, id)).returning().then((r) => r[0] ?? null),
+  delete: async (id: string) => {
+    const [post] = await db.delete(posts).where(eq(posts.id, id)).returning();
+    return post;
+  },
 };

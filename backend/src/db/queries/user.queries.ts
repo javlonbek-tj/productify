@@ -5,11 +5,15 @@ import { users, type NewUser, type UpdateUser } from '../schema';
 export const userQueries = {
   findAll: () => db.select().from(users),
 
-  findById: (id: string) =>
-    db.select().from(users).where(eq(users.id, id)).then((r) => r[0] ?? null),
+  findById: async (id: string) => {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  },
 
-  findByEmail: (email: string) =>
-    db.select().from(users).where(eq(users.email, email)).then((r) => r[0] ?? null),
+  findByEmail: async (email: string) => {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  },
 
   findWithRelations: (id: string) =>
     db.query.users.findFirst({
@@ -29,12 +33,18 @@ export const userQueries = {
       },
     }),
 
-  create: (data: NewUser) =>
-    db.insert(users).values(data).returning().then((r) => r[0]),
+  create: async (data: NewUser) => {
+    const [user] = await db.insert(users).values(data).returning();
+    return user;
+  },
 
-  update: (id: string, data: UpdateUser) =>
-    db.update(users).set(data).where(eq(users.id, id)).returning().then((r) => r[0] ?? null),
+  update: async (id: string, data: UpdateUser) => {
+    const [user] = await db.update(users).set(data).where(eq(users.id, id)).returning();
+    return user;
+  },
 
-  delete: (id: string) =>
-    db.delete(users).where(eq(users.id, id)).returning().then((r) => r[0] ?? null),
+  delete: async (id: string) => {
+    const [user] = await db.delete(users).where(eq(users.id, id)).returning();
+    return user;
+  },
 };

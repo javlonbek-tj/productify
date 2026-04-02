@@ -3,8 +3,10 @@ import { db } from '../index';
 import { comments, type NewComment, type UpdateComment } from '../schema';
 
 export const commentQueries = {
-  findById: (id: string) =>
-    db.select().from(comments).where(eq(comments.id, id)).then((r) => r[0] ?? null),
+  findById: async (id: string) => {
+    const [comment] = await db.select().from(comments).where(eq(comments.id, id));
+    return comment;
+  },
 
   findByPost: (postId: string) =>
     db.select().from(comments).where(eq(comments.postId, postId)),
@@ -12,12 +14,18 @@ export const commentQueries = {
   findByUser: (userId: string) =>
     db.select().from(comments).where(eq(comments.userId, userId)),
 
-  create: (data: NewComment) =>
-    db.insert(comments).values(data).returning().then((r) => r[0]),
+  create: async (data: NewComment) => {
+    const [comment] = await db.insert(comments).values(data).returning();
+    return comment;
+  },
 
-  update: (id: string, data: UpdateComment) =>
-    db.update(comments).set(data).where(eq(comments.id, id)).returning().then((r) => r[0] ?? null),
+  update: async (id: string, data: UpdateComment) => {
+    const [comment] = await db.update(comments).set(data).where(eq(comments.id, id)).returning();
+    return comment;
+  },
 
-  delete: (id: string) =>
-    db.delete(comments).where(eq(comments.id, id)).returning().then((r) => r[0] ?? null),
+  delete: async (id: string) => {
+    const [comment] = await db.delete(comments).where(eq(comments.id, id)).returning();
+    return comment;
+  },
 };

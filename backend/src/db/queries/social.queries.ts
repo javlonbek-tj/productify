@@ -10,40 +10,50 @@ import {
 } from '../schema';
 
 export const socialQueries = {
-  follow: (data: NewUserFollow) =>
-    db.insert(userFollows).values(data).returning().then((r) => r[0]),
+  follow: async (data: NewUserFollow) => {
+    const [follow] = await db.insert(userFollows).values(data).returning();
+    return follow;
+  },
 
-  unfollow: (followerId: string, followingId: string) =>
-    db
+  unfollow: async (followerId: string, followingId: string) => {
+    const [follow] = await db
       .delete(userFollows)
       .where(and(eq(userFollows.followerId, followerId), eq(userFollows.followingId, followingId)))
-      .returning()
-      .then((r) => r[0] ?? null),
+      .returning();
+    return follow;
+  },
 
-  isFollowing: (followerId: string, followingId: string) =>
-    db
+  isFollowing: async (followerId: string, followingId: string) => {
+    const result = await db
       .select()
       .from(userFollows)
-      .where(and(eq(userFollows.followerId, followerId), eq(userFollows.followingId, followingId)))
-      .then((r) => r.length > 0),
+      .where(and(eq(userFollows.followerId, followerId), eq(userFollows.followingId, followingId)));
+    return result.length > 0;
+  },
 
-  block: (data: NewUserBlock) =>
-    db.insert(userBlocks).values(data).returning().then((r) => r[0]),
+  block: async (data: NewUserBlock) => {
+    const [block] = await db.insert(userBlocks).values(data).returning();
+    return block;
+  },
 
-  unblock: (blockerId: string, blockedId: string) =>
-    db
+  unblock: async (blockerId: string, blockedId: string) => {
+    const [block] = await db
       .delete(userBlocks)
       .where(and(eq(userBlocks.blockerId, blockerId), eq(userBlocks.blockedId, blockedId)))
-      .returning()
-      .then((r) => r[0] ?? null),
+      .returning();
+    return block;
+  },
 
-  isBlocked: (blockerId: string, blockedId: string) =>
-    db
+  isBlocked: async (blockerId: string, blockedId: string) => {
+    const result = await db
       .select()
       .from(userBlocks)
-      .where(and(eq(userBlocks.blockerId, blockerId), eq(userBlocks.blockedId, blockedId)))
-      .then((r) => r.length > 0),
+      .where(and(eq(userBlocks.blockerId, blockerId), eq(userBlocks.blockedId, blockedId)));
+    return result.length > 0;
+  },
 
-  addProfileView: (data: NewUserView) =>
-    db.insert(userViews).values(data).returning().then((r) => r[0]),
+  addProfileView: async (data: NewUserView) => {
+    const [view] = await db.insert(userViews).values(data).returning();
+    return view;
+  },
 };

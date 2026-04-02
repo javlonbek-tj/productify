@@ -5,18 +5,28 @@ import { categories, type NewCategory, type UpdateCategory } from '../schema';
 export const categoryQueries = {
   findAll: () => db.select().from(categories),
 
-  findById: (id: string) =>
-    db.select().from(categories).where(eq(categories.id, id)).then((r) => r[0] ?? null),
+  findById: async (id: string) => {
+    const [category] = await db.select().from(categories).where(eq(categories.id, id));
+    return category;
+  },
 
-  findByName: (name: string) =>
-    db.select().from(categories).where(eq(categories.name, name)).then((r) => r[0] ?? null),
+  findByName: async (name: string) => {
+    const [category] = await db.select().from(categories).where(eq(categories.name, name));
+    return category;
+  },
 
-  create: (data: NewCategory) =>
-    db.insert(categories).values(data).returning().then((r) => r[0]),
+  create: async (data: NewCategory) => {
+    const [category] = await db.insert(categories).values(data).returning();
+    return category;
+  },
 
-  update: (id: string, data: UpdateCategory) =>
-    db.update(categories).set(data).where(eq(categories.id, id)).returning().then((r) => r[0] ?? null),
+  update: async (id: string, data: UpdateCategory) => {
+    const [category] = await db.update(categories).set(data).where(eq(categories.id, id)).returning();
+    return category;
+  },
 
-  delete: (id: string) =>
-    db.delete(categories).where(eq(categories.id, id)).returning().then((r) => r[0] ?? null),
+  delete: async (id: string) => {
+    const [category] = await db.delete(categories).where(eq(categories.id, id)).returning();
+    return category;
+  },
 };

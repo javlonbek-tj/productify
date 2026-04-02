@@ -1,39 +1,76 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../index';
-import { refreshTokens, otps, type NewRefreshToken, type NewOtp } from '../schema';
+import {
+  refreshTokens,
+  otps,
+  type NewRefreshToken,
+  type NewOtp,
+} from '../schema';
 
 export const refreshTokenQueries = {
   findByUserId: (userId: string) =>
     db.select().from(refreshTokens).where(eq(refreshTokens.userId, userId)),
 
-  findByToken: (token: string) =>
-    db.select().from(refreshTokens).where(eq(refreshTokens.token, token)).then((r) => r[0] ?? null),
+  findByToken: async (token: string) => {
+    const [refreshToken] = await db
+      .select()
+      .from(refreshTokens)
+      .where(eq(refreshTokens.token, token));
+    return refreshToken;
+  },
 
-  create: (data: NewRefreshToken) =>
-    db.insert(refreshTokens).values(data).returning().then((r) => r[0]),
+  create: async (data: NewRefreshToken) => {
+    const [refreshToken] = await db
+      .insert(refreshTokens)
+      .values(data)
+      .returning();
+    return refreshToken;
+  },
 
-  deleteByUserId: (userId: string) =>
-    db.delete(refreshTokens).where(eq(refreshTokens.userId, userId)).returning(),
+  deleteByUserId: async (userId: string) => {
+    const [refreshToken] = await db
+      .delete(refreshTokens)
+      .where(eq(refreshTokens.userId, userId))
+      .returning();
+    return refreshToken;
+  },
 
-  deleteByToken: (token: string) =>
-    db.delete(refreshTokens).where(eq(refreshTokens.token, token)).returning().then((r) => r[0] ?? null),
+  deleteByToken: async (token: string) => {
+    const [refreshToken] = await db
+      .delete(refreshTokens)
+      .where(eq(refreshTokens.token, token))
+      .returning();
+    return refreshToken;
+  },
 };
 
 export const otpQueries = {
-  findByUserId: (userId: string) =>
-    db.select().from(otps).where(eq(otps.userId, userId)).then((r) => r[0] ?? null),
+  findByUserId: async (userId: string) => {
+    const [otp] = await db.select().from(otps).where(eq(otps.userId, userId));
+    return otp;
+  },
 
-  upsert: (data: NewOtp) =>
-    db
+  upsert: async (data: NewOtp) => {
+    const [otp] = await db
       .insert(otps)
       .values(data)
       .onConflictDoUpdate({
         target: otps.userId,
-        set: { otpHash: data.otpHash, expiresAt: data.expiresAt, updatedAt: new Date() },
+        set: {
+          otpHash: data.otpHash,
+          expiresAt: data.expiresAt,
+          updatedAt: new Date(),
+        },
       })
-      .returning()
-      .then((r) => r[0]),
+      .returning();
+    return otp;
+  },
 
-  deleteByUserId: (userId: string) =>
-    db.delete(otps).where(eq(otps.userId, userId)).returning().then((r) => r[0] ?? null),
+  deleteByUserId: async (userId: string) => {
+    const [otp] = await db
+      .delete(otps)
+      .where(eq(otps.userId, userId))
+      .returning();
+    return otp;
+  },
 };

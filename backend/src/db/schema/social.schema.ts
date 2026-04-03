@@ -1,8 +1,30 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, uuid, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, pgEnum, uuid, text, timestamp } from 'drizzle-orm/pg-core';
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { users } from './user.schema';
 
+export const connectionStatus = pgEnum('connection_status', [
+  'pending',
+  'accepted',
+  'rejected',
+  'withdrawn',
+]);
+
+export const connectionRequests = pgTable('connection_requests', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  senderId: uuid('sender_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  receiverId: uuid('receiver_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  status: connectionStatus('status').default('pending').notNull(),
+  message: text('message'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull().$onUpdate(() => new Date()),
+});
+
+// Follow without connecting (e.g. following a thought leader)
 export const userFollows = pgTable('user_follows', {
   followerId: uuid('follower_id')
     .notNull()
@@ -32,6 +54,19 @@ export const userViews = pgTable('user_views', {
     .references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+export const connectionRequestsRelations = relations(connectionRequests, ({ one }) => ({
+  sender: one(users, {
+    fields: [connectionRequests.senderId],
+    references: [users.id],
+    relationName: 'sender',
+  }),
+  receiver: one(users, {
+    fields: [connectionRequests.receiverId],
+    references: [users.id],
+    relationName: 'receiver',
+  }),
+}));
 
 export const userFollowsRelations = relations(userFollows, ({ one }) => ({
   follower: one(users, {
@@ -73,6 +108,9 @@ export const userViewsRelations = relations(userViews, ({ one }) => ({
 }));
 
 // Types
+export type ConnectionRequest = InferSelectModel<typeof connectionRequests>;
+export type NewConnectionRequest = InferInsertModel<typeof connectionRequests>;
+export type UpdateConnectionRequest = Partial<Omit<NewConnectionRequest, 'id' | 'createdAt'>>;
 export type UserFollow = InferSelectModel<typeof userFollows>;
 export type UserBlock = InferSelectModel<typeof userBlocks>;
 export type UserView = InferSelectModel<typeof userViews>;

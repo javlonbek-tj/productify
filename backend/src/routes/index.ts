@@ -1,1 +1,9 @@
 export { default as authRouter } from './auth.routes';
+export { default as userRouter } from './user.routes';
+export { default as postRouter } from './post.routes';
+export { default as commentRouter } from './comment.routes';
+export { default as socialRouter } from './social.routes';
+export { default as experienceRouter } from './experience.routes';
+export { default as educationRouter } from './education.routes';
+export { default as notificationRouter } from './notification.routes';
+export { default as messageRouter } from './message.routes';

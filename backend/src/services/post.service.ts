@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../db/db';
-import { posts, categories } from '../db/schema';
+import { posts } from '../db/schema';
 import { AppError } from '../utils/appError';
 import type { NewPost, UpdatePost } from '../db/schema';
 
@@ -19,10 +19,8 @@ export async function getPostWithRelations(id: string) {
     where: eq(posts.id, id),
     with: {
       user: true,
-      category: true,
-      comments: { with: { user: true } },
-      likes: true,
-      dislikes: true,
+      comments: { with: { user: true, replies: { with: { user: true } } } },
+      reactions: true,
       views: true,
     },
   });
@@ -34,17 +32,7 @@ export async function getPostsByUser(userId: string) {
   return db.select().from(posts).where(eq(posts.userId, userId));
 }
 
-export async function getPostsByCategory(categoryId: string) {
-  return db.select().from(posts).where(eq(posts.categoryId, categoryId));
-}
-
 export async function createPost(data: NewPost) {
-  const [category] = await db
-    .select()
-    .from(categories)
-    .where(eq(categories.id, data.categoryId));
-  if (!category) throw new AppError('Category not found.', 404);
-
   const [post] = await db.insert(posts).values(data).returning();
   return post;
 }

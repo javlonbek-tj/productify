@@ -1,26 +1,26 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, uuid, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, pgEnum, uuid, timestamp } from 'drizzle-orm/pg-core';
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { users } from './user.schema';
 import { posts } from './post.schema';
 
-export const postLikes = pgTable('post_likes', {
-  postId: uuid('post_id')
-    .notNull()
-    .references(() => posts.id, { onDelete: 'cascade' }),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
+export const reactionType = pgEnum('reaction_type', [
+  'like',
+  'celebrate',
+  'support',
+  'love',
+  'insightful',
+  'curious',
+]);
 
-export const postDislikes = pgTable('post_dislikes', {
+export const postReactions = pgTable('post_reactions', {
   postId: uuid('post_id')
     .notNull()
     .references(() => posts.id, { onDelete: 'cascade' }),
   userId: uuid('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
+  type: reactionType('type').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
@@ -34,14 +34,9 @@ export const postViews = pgTable('post_views', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-export const postLikesRelations = relations(postLikes, ({ one }) => ({
-  post: one(posts, { fields: [postLikes.postId], references: [posts.id] }),
-  user: one(users, { fields: [postLikes.userId], references: [users.id] }),
-}));
-
-export const postDislikesRelations = relations(postDislikes, ({ one }) => ({
-  post: one(posts, { fields: [postDislikes.postId], references: [posts.id] }),
-  user: one(users, { fields: [postDislikes.userId], references: [users.id] }),
+export const postReactionsRelations = relations(postReactions, ({ one }) => ({
+  post: one(posts, { fields: [postReactions.postId], references: [posts.id] }),
+  user: one(users, { fields: [postReactions.userId], references: [users.id] }),
 }));
 
 export const postViewsRelations = relations(postViews, ({ one }) => ({
@@ -50,9 +45,7 @@ export const postViewsRelations = relations(postViews, ({ one }) => ({
 }));
 
 // Types
-export type PostLike = InferSelectModel<typeof postLikes>;
-export type PostDislike = InferSelectModel<typeof postDislikes>;
+export type PostReaction = InferSelectModel<typeof postReactions>;
 export type PostView = InferSelectModel<typeof postViews>;
-export type NewPostLike = InferInsertModel<typeof postLikes>;
-export type NewPostDislike = InferInsertModel<typeof postDislikes>;
+export type NewPostReaction = InferInsertModel<typeof postReactions>;
 export type NewPostView = InferInsertModel<typeof postViews>;

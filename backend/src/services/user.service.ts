@@ -20,15 +20,16 @@ export async function getUserProfile(id: string) {
     with: {
       posts: true,
       comments: true,
-      followers: true,
       following: true,
+      followers: true,
       blockedUsers: true,
       blockedBy: true,
       profileViews: true,
       viewedProfiles: true,
-      likes: true,
-      dislikes: true,
+      reactions: true,
       postViews: true,
+      experiences: true,
+      educations: true,
     },
   });
   if (!user) throw new AppError('User not found.', 404);
@@ -53,30 +54,4 @@ export async function removeUser(id: string) {
 
   const [user] = await db.delete(users).where(eq(users.id, id)).returning();
   return user;
-}
-
-export async function blockUser(id: string) {
-  const [user] = await db.select().from(users).where(eq(users.id, id));
-  if (!user) throw new AppError('User not found.', 404);
-  if (user.isBlocked) throw new AppError('User is already blocked.', 409);
-
-  const [updated] = await db
-    .update(users)
-    .set({ isBlocked: true })
-    .where(eq(users.id, id))
-    .returning();
-  return updated;
-}
-
-export async function unblockUser(id: string) {
-  const [user] = await db.select().from(users).where(eq(users.id, id));
-  if (!user) throw new AppError('User not found.', 404);
-  if (!user.isBlocked) throw new AppError('User is not blocked.', 409);
-
-  const [updated] = await db
-    .update(users)
-    .set({ isBlocked: false })
-    .where(eq(users.id, id))
-    .returning();
-  return updated;
 }

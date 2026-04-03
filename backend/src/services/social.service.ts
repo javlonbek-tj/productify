@@ -1,6 +1,12 @@
 import { eq, and } from 'drizzle-orm';
 import { db } from '../db/db';
-import { users, userFollows, userBlocks, userViews } from '../db/schema';
+import {
+  users,
+  userFollows,
+  userBlocks,
+  userViews,
+  connectionRequests,
+} from '../db/schema';
 import { AppError } from '../utils/appError';
 
 export async function follow(followerId: string, followingId: string) {
@@ -122,4 +128,104 @@ export async function viewProfile(profileOwnerId: string, viewerId: string) {
     .values({ profileOwnerId, viewerId })
     .returning();
   return view;
+}
+
+// ── Connection requests ───────────────────────────────────────────────────────
+
+export async function sendConnectionRequest(
+  senderId: string,
+  receiverId: string,
+  message?: string,
+) {
+  if (senderId === receiverId)
+    throw new AppError('You cannot connect with yourself.', 400);
+
+  const [target] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, receiverId));
+  if (!target) throw new AppError('User not found.', 404);
+
+  const [existing] = await db
+    .select()
+    .from(connectionRequests)
+    .where(
+      and(
+        eq(connectionRequests.senderId, senderId),
+        eq(connectionRequests.receiverId, receiverId),
+      ),
+    );
+  if (existing)
+    throw new AppError('Connection request already sent.', 409);
+
+  const [request] = await db
+    .insert(connectionRequests)
+    .values({ senderId, receiverId, message })
+    .returning();
+  return request;
+}
+
+export async function respondToConnectionRequest(
+  id: string,
+  userId: string,
+  status: 'accepted' | 'rejected',
+) {
+  const [request] = await db
+    .select()
+    .from(connectionRequests)
+    .where(eq(connectionRequests.id, id));
+  if (!request) throw new AppError('Connection request not found.', 404);
+  if (request.receiverId !== userId)
+    throw new AppError('Not authorized.', 403);
+  if (request.status !== 'pending')
+    throw new AppError('This request has already been responded to.', 409);
+
+  const [updated] = await db
+    .update(connectionRequests)
+    .set({ status })
+    .where(eq(connectionRequests.id, id))
+    .returning();
+  return updated;
+}
+
+export async function withdrawConnectionRequest(id: string, userId: string) {
+  const [request] = await db
+    .select()
+    .from(connectionRequests)
+    .where(eq(connectionRequests.id, id));
+  if (!request) throw new AppError('Connection request not found.', 404);
+  if (request.senderId !== userId)
+    throw new AppError('Not authorized.', 403);
+  if (request.status !== 'pending')
+    throw new AppError('Only pending requests can be withdrawn.', 409);
+
+  const [deleted] = await db
+    .delete(connectionRequests)
+    .where(eq(connectionRequests.id, id))
+    .returning();
+  return deleted;
+}
+
+export async function getReceivedRequests(userId: string) {
+  return db
+    .select()
+    .from(connectionRequests)
+    .where(
+      and(
+        eq(connectionRequests.receiverId, userId),
+        eq(connectionRequests.status, 'pending'),
+      ),
+    );
+}
+
+export async function getSentRequests(userId: string) {
+  return db
+    .select()
+    .from(connectionRequests)
+    .where(
+      and(
+        eq(connectionRequests.senderId, userId),
+        eq(connectionRequests.status, 'pending'),
+      ),
+    );
 }

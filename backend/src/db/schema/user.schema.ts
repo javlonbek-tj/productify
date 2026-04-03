@@ -1,31 +1,53 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, uuid, text, timestamp, boolean, pgEnum } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  pgEnum,
+  uuid,
+  text,
+  timestamp,
+  boolean,
+} from 'drizzle-orm/pg-core';
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { posts } from './post.schema';
 import { comments } from './comment.schema';
-import { postLikes, postDislikes, postViews } from './post-interaction.schema';
-import { userFollows, userBlocks, userViews } from './social.schema';
+import { postReactions, postViews } from './post-interaction.schema';
+import {
+  connectionRequests,
+  userFollows,
+  userBlocks,
+  userViews,
+} from './social.schema';
 import { refreshTokens, otps } from './auth.schema';
+import { experiences } from './experience.schema';
+import { educations } from './education.schema';
+import { notifications } from './notification.schema';
+import { conversationParticipants } from './message.schema';
 
-export const roleEnum = pgEnum('role', ['Admin', 'User', 'Editor']);
-export const awardEnum = pgEnum('user_award', ['Bronze', 'Silver', 'Gold']);
+export const userRole = pgEnum('user_role', ['user', 'admin']);
 
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
   firstname: text('firstname').notNull(),
   lastname: text('lastname').notNull(),
   profilePhoto: text('profile_photo'),
+  headline: text('headline').default('LinkedIn User'),
+  location: text('location'),
+  about: text('about'),
+  skills: text('skills').array().default([]),
+  bannerImage: text('banner_image'),
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   isBlocked: boolean('is_blocked').notNull().default(false),
-  role: roleEnum('role').notNull().default('Admin'),
-  userAward: awardEnum('user_award').notNull().default('Bronze'),
+  role: userRole('role').default('user').notNull(),
   isActivated: boolean('is_activated').notNull().default(false),
   passwordChangedAt: timestamp('password_changed_at'),
   passwordResetToken: text('password_reset_token'),
   passwordResetExpires: timestamp('password_reset_expires'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull().$onUpdate(() => new Date()),
+  updatedAt: timestamp('updated_at')
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
 });
 
 export const usersRelations = relations(users, ({ one, many }) => ({
@@ -33,25 +55,26 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   comments: many(comments),
   refreshTokens: many(refreshTokens),
   otp: one(otps, { fields: [users.id], references: [otps.userId] }),
-  likes: many(postLikes),
-  dislikes: many(postDislikes),
+  reactions: many(postReactions),
   postViews: many(postViews),
-  followers: many(userFollows, { relationName: 'following' }),
+  sentConnectionRequests: many(connectionRequests, { relationName: 'sender' }),
+  receivedConnectionRequests: many(connectionRequests, {
+    relationName: 'receiver',
+  }),
   following: many(userFollows, { relationName: 'follower' }),
+  followers: many(userFollows, { relationName: 'following' }),
   blockedUsers: many(userBlocks, { relationName: 'blocker' }),
   blockedBy: many(userBlocks, { relationName: 'blocked' }),
   profileViews: many(userViews, { relationName: 'profileOwner' }),
   viewedProfiles: many(userViews, { relationName: 'viewer' }),
+  experiences: many(experiences),
+  educations: many(educations),
+  notifications: many(notifications, { relationName: 'recipient' }),
+  sentNotifications: many(notifications, { relationName: 'sender' }),
+  conversations: many(conversationParticipants),
 }));
 
 // Types
 export type User = InferSelectModel<typeof users>;
 export type NewUser = InferInsertModel<typeof users>;
 export type UpdateUser = Partial<Omit<NewUser, 'id' | 'createdAt'>>;
-
-export type UserWithRelations = User & {
-  posts: InferSelectModel<typeof posts>[];
-  comments: InferSelectModel<typeof comments>[];
-  followers: (InferSelectModel<typeof userFollows> & { follower: User })[];
-  following: (InferSelectModel<typeof userFollows> & { following: User })[];
-};

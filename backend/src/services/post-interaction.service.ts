@@ -1,52 +1,33 @@
 import { eq, and } from 'drizzle-orm';
 import { db } from '../db/db';
-import { posts, postLikes, postDislikes, postViews } from '../db/schema';
+import { posts, postReactions, postViews } from '../db/schema';
 import { AppError } from '../utils/appError';
+import type { NewPostReaction } from '../db/schema';
 
-export async function likePost(postId: string, userId: string) {
+export async function reactToPost(postId: string, userId: string, type: NewPostReaction['type']) {
   const [post] = await db.select().from(posts).where(eq(posts.id, postId));
   if (!post) throw new AppError('Post not found.', 404);
 
-  const [like] = await db
-    .insert(postLikes)
-    .values({ postId, userId })
+  const [reaction] = await db
+    .insert(postReactions)
+    .values({ postId, userId, type })
+    .onConflictDoUpdate({
+      target: [postReactions.postId, postReactions.userId],
+      set: { type },
+    })
     .returning();
-  return like;
+  return reaction;
 }
 
-export async function unlikePost(postId: string, userId: string) {
+export async function removeReaction(postId: string, userId: string) {
   const [post] = await db.select().from(posts).where(eq(posts.id, postId));
   if (!post) throw new AppError('Post not found.', 404);
 
-  const [like] = await db
-    .delete(postLikes)
-    .where(and(eq(postLikes.postId, postId), eq(postLikes.userId, userId)))
+  const [reaction] = await db
+    .delete(postReactions)
+    .where(and(eq(postReactions.postId, postId), eq(postReactions.userId, userId)))
     .returning();
-  return like;
-}
-
-export async function dislikePost(postId: string, userId: string) {
-  const [post] = await db.select().from(posts).where(eq(posts.id, postId));
-  if (!post) throw new AppError('Post not found.', 404);
-
-  const [dislike] = await db
-    .insert(postDislikes)
-    .values({ postId, userId })
-    .returning();
-  return dislike;
-}
-
-export async function undislikePost(postId: string, userId: string) {
-  const [post] = await db.select().from(posts).where(eq(posts.id, postId));
-  if (!post) throw new AppError('Post not found.', 404);
-
-  const [dislike] = await db
-    .delete(postDislikes)
-    .where(
-      and(eq(postDislikes.postId, postId), eq(postDislikes.userId, userId)),
-    )
-    .returning();
-  return dislike;
+  return reaction;
 }
 
 export async function viewPost(postId: string, userId: string) {

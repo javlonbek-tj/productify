@@ -4,7 +4,14 @@
       "Bash(npm install:*)",
       "Bash(npm run:*)",
       "Bash(npx tsc:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(npm create:*)",
+      "Bash(printf \"\\\\nexport default function AppRouter\\(\\) {\\\\n  return <RouterProvider router={router} />;\\\\n}\\\\n\")",
+      "Bash(sed -i \"s|@/components/ui/LinkedInMark|@/components/ui/brand/LinkedInMark|g\" \"C:/Users/j.turdimatov/Desktop/Projects/Linkedin clone/frontend/src/components/layout/Navbar.tsx\")",
+      "Bash(sed -i \"s|@/components/ui/LinkedInLogo|@/components/ui/brand/LinkedInLogo|g; s|@/components/ui/FieldItem|@/components/ui/form/FieldItem|g\" \"C:/Users/j.turdimatov/Desktop/Projects/Linkedin clone/frontend/src/pages/auth/ForgotPasswordPage.tsx\")",
+      "Bash(sed -i \"s|@/components/ui/LinkedInLogo|@/components/ui/brand/LinkedInLogo|g; s|@/components/ui/FieldItem|@/components/ui/form/FieldItem|g\" \"C:/Users/j.turdimatov/Desktop/Projects/Linkedin clone/frontend/src/pages/auth/LoginPage.tsx\")",
+      "Bash(sed -i \"s|@/components/ui/LinkedInLogo|@/components/ui/brand/LinkedInLogo|g; s|@/components/ui/FieldItem|@/components/ui/form/FieldItem|g\" \"C:/Users/j.turdimatov/Desktop/Projects/Linkedin clone/frontend/src/pages/auth/RegisterPage.tsx\")",
+      "Bash(sed -i \"s|@/components/ui/LinkedInLogo|@/components/ui/brand/LinkedInLogo|g; s|@/components/ui/FieldItem|@/components/ui/form/FieldItem|g\" \"C:/Users/j.turdimatov/Desktop/Projects/Linkedin clone/frontend/src/pages/auth/VerifyOtpPage.tsx\")"
     ]
   }
 }

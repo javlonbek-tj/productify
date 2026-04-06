@@ -18,7 +18,7 @@ import type {
 import type { AuthTokens } from '../types/auth.types';
 
 const SALT_ROUNDS = 12;
-const OTP_TTL_MS = 1 * 60 * 1000; // 1 minutes
+const OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 async function createAndSendOtp(userId: string, email: string): Promise<void> {
   const otp = generateOtp();
@@ -48,7 +48,7 @@ async function createAndSendOtp(userId: string, email: string): Promise<void> {
 // ── Service methods ───────────────────────────────────────────────────────────
 
 export async function register(input: RegisterInput): Promise<void> {
-  const { firstname, lastname, username, email, password } = input;
+  const { email, password } = input;
 
   const [existingEmail] = await db
     .select({ id: users.id })
@@ -57,23 +57,12 @@ export async function register(input: RegisterInput): Promise<void> {
   if (existingEmail)
     throw new AppError('An account with this email already exists.', 409);
 
-  const [existingUsername] = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(eq(users.username, username));
-  if (existingUsername)
-    throw new AppError('This username is already taken.', 409);
-
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
   const [user] = await db
     .insert(users)
-    .values({ firstname, lastname, username, email, passwordHash })
-    .returning({
-      id: users.id,
-      email: users.email,
-      firstname: users.firstname,
-    });
+    .values({ email, passwordHash })
+    .returning({ id: users.id, email: users.email });
 
   await createAndSendOtp(user.id, user.email);
 }
@@ -124,7 +113,6 @@ export async function verifyOtp(input: VerifyOtpInput): Promise<AuthTokens> {
       id: user.id,
       firstname: user.firstname,
       lastname: user.lastname,
-      username: user.username,
       email: user.email,
       isActivated: true,
       role: user.role,
@@ -176,7 +164,6 @@ export async function login(input: LoginInput): Promise<AuthTokens> {
       id: user.id,
       firstname: user.firstname,
       lastname: user.lastname,
-      username: user.username,
       email: user.email,
       isActivated: user.isActivated,
       role: user.role,
@@ -216,7 +203,6 @@ export async function refresh(incomingToken: string): Promise<AuthTokens> {
       id: user.id,
       firstname: user.firstname,
       lastname: user.lastname,
-      username: user.username,
       email: user.email,
       isActivated: user.isActivated,
       role: user.role,
@@ -232,7 +218,7 @@ export async function logout(userId: string): Promise<void> {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-const RESET_OTP_TTL_MS = 1 * 60 * 1000; // 1 minutes
+const RESET_OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 export async function forgotPassword({
   email,
@@ -268,7 +254,7 @@ export async function forgotPassword({
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-const RESET_TOKEN_TTL_MS = 15 * 60 * 1000; // 15 minutes
+const RESET_TOKEN_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 export async function verifyResetOtp({
   email,

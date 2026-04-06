@@ -27,9 +27,8 @@ export const userRole = pgEnum('user_role', ['user', 'admin']);
 
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
-  firstname: text('firstname').notNull(),
-  lastname: text('lastname').notNull(),
-  username: text('username').notNull().unique(),
+  firstname: text('firstname'),
+  lastname: text('lastname'),
   profilePhoto: text('profile_photo'),
   headline: text('headline').default('LinkedIn User'),
   location: text('location'),

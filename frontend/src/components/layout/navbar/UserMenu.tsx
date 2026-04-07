@@ -2,24 +2,22 @@ import { useNavigate } from 'react-router';
 import { Avatar, Dropdown } from 'antd';
 import { useAuthStore } from '@/store/authStore';
 import { useLogout } from '@/hooks/auth/useForgotPassword';
+import { getInitials, getFullName } from '@/utils/user.utils';
 
 export default function UserMenu() {
   const user = useAuthStore((s) => s.user);
   const { mutate: logout } = useLogout();
   const navigate = useNavigate();
 
-  const initial = user?.firstname?.[0] ?? user?.email?.[0]?.toUpperCase() ?? '?';
+  const initial = user ? getInitials(user.firstname, user.lastname, user.email) : '?';
+  const fullName = user ? getFullName(user.firstname, user.lastname, user.email) : '';
 
   const items = [
     {
       key: 'header',
       label: (
         <div className='py-1'>
-          <p className='font-semibold text-gray-900'>
-            {user?.firstname && user?.lastname
-              ? `${user.firstname} ${user.lastname}`
-              : user?.email}
-          </p>
+          <p className='font-semibold text-gray-900'>{fullName}</p>
           <p className='text-xs text-gray-500'>{user?.email}</p>
         </div>
       ),

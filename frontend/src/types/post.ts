@@ -1,5 +1,3 @@
-import type { AuthUser } from './user';
-
 export type PostVisibility = 'public' | 'connections' | 'private';
 
 export type ReactionType =
@@ -10,13 +8,30 @@ export type ReactionType =
   | 'insightful'
   | 'curious';
 
+export interface PostAuthor {
+  id: string;
+  firstname: string | null;
+  lastname: string | null;
+  headline: string | null;
+  profilePhoto: string | null;
+}
+
+export interface PostReaction {
+  postId: string;
+  userId: string;
+  type: ReactionType;
+  createdAt: string;
+}
+
 export interface Post {
   id: string;
   content: string;
   media: string[];
   visibility: PostVisibility;
   userId: string;
-  user?: AuthUser;
+  user: PostAuthor;
+  reactions: PostReaction[];
+  comments: { id: string }[];
   createdAt: string;
   updatedAt: string;
 }

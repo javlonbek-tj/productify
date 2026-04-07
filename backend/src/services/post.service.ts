@@ -5,7 +5,22 @@ import { AppError } from '../utils/appError';
 import type { NewPost, UpdatePost } from '../db/schema';
 
 export async function getAllPosts() {
-  return db.select().from(posts);
+  return db.query.posts.findMany({
+    with: {
+      user: {
+        columns: {
+          id: true,
+          firstname: true,
+          lastname: true,
+          headline: true,
+          profilePhoto: true,
+        },
+      },
+      reactions: true,
+      comments: { columns: { id: true } },
+    },
+    orderBy: (posts, { desc }) => [desc(posts.createdAt)],
+  });
 }
 
 export async function getPostById(id: string) {

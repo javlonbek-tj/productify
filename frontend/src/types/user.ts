@@ -20,7 +20,7 @@ export interface User {
 // Minimal user shape returned inside auth/list responses
 export type AuthUser = Pick<
   User,
-  'id' | 'firstname' | 'lastname' | 'email' | 'isActivated' | 'role'
+  'id' | 'firstname' | 'lastname' | 'email' | 'isActivated' | 'role' | 'headline' | 'location' | 'profilePhoto'
 >;
 
 // Request types

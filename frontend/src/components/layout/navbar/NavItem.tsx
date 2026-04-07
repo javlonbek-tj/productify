@@ -8,10 +8,10 @@ export default function NavItem({ label, path, icon: Icon }: NavItemType) {
   return (
     <Link
       to={path}
-      className={`flex flex-col items-center justify-center gap-0.5 px-5 border-b-2 transition-colors no-underline text-gray-500! ${
+      className={`flex flex-col items-center justify-center gap-0.5 px-5 border-b-2 transition-colors no-underline text-gray-500 ${
         isActive
-          ? 'border-black text-gray-800!'
-          : 'border-transparent hover:text-gray-800!'
+          ? 'border-black text-gray-800'
+          : 'border-transparent hover:text-gray-800'
       }`}
     >
       <Icon size={20} />

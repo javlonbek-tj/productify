@@ -1,9 +1,10 @@
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
+import { env } from '@/config/env';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api/v1',
-  withCredentials: true, // send refreshToken cookie
+  baseURL: env.apiUrl,
+  withCredentials: true, // send refreshToken cookie from backend
 });
 
 // Attach access token to every request
@@ -41,8 +42,6 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // No token means this is a guest request (e.g. login with wrong password).
-    // Don't attempt refresh — just propagate the error to the mutation's onError.
     if (!useAuthStore.getState().accessToken) {
       return Promise.reject(error);
     }
@@ -61,7 +60,7 @@ api.interceptors.response.use(
 
     try {
       const { data } = await axios.post(
-        'http://localhost:3000/api/v1/auth/refresh',
+        `${env.apiUrl}/auth/refresh`,
         {},
         { withCredentials: true },
       );

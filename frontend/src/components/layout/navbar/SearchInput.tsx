@@ -10,8 +10,8 @@ export default function SearchInput() {
       prefix={<SearchOutlined className='text-gray-500' />}
       placeholder='Search'
       variant='filled'
-      className={`rounded-full! bg-[#EEF3F8] transition-all duration-300 ${
-        focused ? 'w-90!' : 'w-60!'
+      className={`rounded-full bg-[#EEF3F8] transition-all duration-300 ${
+        focused ? 'w-90' : 'w-60'
       }`}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}

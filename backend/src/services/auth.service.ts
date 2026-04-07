@@ -116,6 +116,9 @@ export async function verifyOtp(input: VerifyOtpInput): Promise<AuthTokens> {
       email: user.email,
       isActivated: true,
       role: user.role,
+      headline: user.headline,
+      location: user.location,
+      profilePhoto: user.profilePhoto,
     },
   };
 }
@@ -167,6 +170,9 @@ export async function login(input: LoginInput): Promise<AuthTokens> {
       email: user.email,
       isActivated: user.isActivated,
       role: user.role,
+      headline: user.headline,
+      location: user.location,
+      profilePhoto: user.profilePhoto,
     },
   };
 }
@@ -206,6 +212,9 @@ export async function refresh(incomingToken: string): Promise<AuthTokens> {
       email: user.email,
       isActivated: user.isActivated,
       role: user.role,
+      headline: user.headline,
+      location: user.location,
+      profilePhoto: user.profilePhoto,
     },
   };
 }
